@@ -1,0 +1,34 @@
+- name: Create Job for running evicted pod cleaner script
+  k8s_job:
+    name: evicted-pod-cleaner
+    namespace: default
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: evicted-pod-cleaner
+      spec:
+        template:
+          metadata:
+            name: evicted-pod-cleaner
+          spec:
+            restartPolicy: Never
+            containers:
+              - name: clean-evicted-pods
+                image: alpine:latest
+                command:
+                  - "/bin/sh"
+                  - "-c"
+                  - "/bin/bash /scripts/clean-evicted-pods.sh"
+                volumeMounts:
+                  - name: scripts
+                    mountPath: /scripts
+                  - name: evicted-pod-cleaner-logs
+                    mountPath: /var/log/evicted-pod-cleaner
+            volumes:
+              - name: scripts
+                configMap:
+                  name: evicted-pod-cleaner
+              - name: evicted-pod-cleaner-logs
+                persistentVolumeClaim:
+                  claimName: evicted-pod-log
