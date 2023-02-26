@@ -1,0 +1,11 @@
+---
+- name: Delete Evicted Pods
+  hosts: all
+  become: true
+  gather_facts: false
+
+  roles:
+    - role: Pre_works
+    - role: create_configmap
+    - role: create_cronjob
+    - role: create_pod
