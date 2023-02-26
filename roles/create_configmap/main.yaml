@@ -1,0 +1,15 @@
+- name: Create ConfigMap for evicted pod cleaner script
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: evicted-pod-cleaner
+      data:
+        clean-evicted-pods.sh: |
+          #!/bin/bash
+          Evicted_pod=`kubectl get pods --as=system:serviceaccount:default:evicted-pod-delete --field-selector status.phase=Failed -o json | jq -r '.items[] | select(.status.reason!=null and .status.reason | startswith("Evicted")) | .metadata.name'`
+          kubectl get pods --as=system:serviceaccount:default:evicted-pod-delete --field-selector status.phase=Failed -o json | jq -r '.items[] | select(.status.reason!=null and .status.reason | startswith("Evicted")) | .metadata.name' | xargs kubectl delete pod
+          echo "$(date): $(Evicted_pod) cleaned up" >> /logs/evicted-pod-cleanup.log
+          exit 0
