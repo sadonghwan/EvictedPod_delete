@@ -1,0 +1,58 @@
+- name: Create PVC
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: evicted-pod-log
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+
+- name: Create ClusterRole for deleting evicted pods
+  k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        name: evicted-pod-delete
+      rules:
+      - apiGroups:
+        - ""
+        resources:
+        - pods
+        verbs:
+        - get
+        - delete
+
+- name: Create ServiceAccount for evicted pod deletion
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: evicted-pod-delete
+
+- name: Bind ServiceAccount with ClusterRole for evicted pod deletion
+  k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: evicted-pod-delete-binding
+      subjects:
+      - kind: ServiceAccount
+        name: evicted-pod-delete
+        namespace: default
+      roleRef:
+        kind: ClusterRole
+        name: evicted-pod-delete
+        apiGroup: rbac.authorization.k8s.io
