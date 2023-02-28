@@ -15,7 +15,7 @@
             restartPolicy: Never
             containers:
               - name: clean-evicted-pods
-                image: alpine:latest
+                image: evicted-pod-cleaner
                 command:
                   - "/bin/sh"
                   - "-c"
