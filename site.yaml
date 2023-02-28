@@ -9,4 +9,4 @@
       name: create PVC, ClusterRole, Account, Binding
     - role: create_configmap
     - role: create_cronjob
-    - role: create_pod
+    - role: create_job
